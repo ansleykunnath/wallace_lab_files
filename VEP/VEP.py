@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 
 # Set up window
-win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=0, units='pix')
+win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=1, units='pix')
 win.color = "black"
 
 # Set up LSL
@@ -53,9 +53,9 @@ for n in range(5):
 
     for i in range(10):
         start_time = core.getTime()
-        outlet.push_sample([3])
-        print("checkerboard2")
-        print(core.getTime()) # for troubleshooting code only
+#        outlet.push_sample([3])
+#        print("checkerboard2")
+#        print(core.getTime()) # for troubleshooting code only
         while core.getTime() - start_time < duration:
             t = core.getTime() - start_time
             phase = int(t * check_freq) % 4 #changed from 1 to 2 for frequency 1; changed from 2 to 4 for frequency 0.5
@@ -67,8 +67,8 @@ for n in range(5):
             fixation_horizontal.draw()
             win.flip()
         outlet.push_sample([2])
-        print("checkerboard1")
-        print(core.getTime()) # for troubleshooting code only
+#        print("checkerboard1")
+#        print(core.getTime()) # for troubleshooting code only
         for keys in event.getKeys():
             if 'escape' in keys:
                 win.close()
@@ -79,8 +79,8 @@ for i in range(5):
     fixation_horizontal.draw()
     win.flip()
     outlet.push_sample([1])
-    print("blank")
-    print(core.getTime()) # for troubleshooting code only
+#    print("blank")
+#    print(core.getTime()) # for troubleshooting code only
     core.wait(1)
 
 # Clean up
