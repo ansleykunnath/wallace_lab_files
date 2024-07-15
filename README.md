@@ -1,1 +1,1 @@
-Files used by undergrads working with Ansley in the Wallace Lab
+Stimulus presentation and data analysis code used by the Wallace Lab
