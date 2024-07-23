@@ -1,0 +1,10 @@
+Source: lslwrap.lvlib:get error string.vi<ERR>
+the stream(s) have not been set up
+Code: 3
+
+Message: 
+Error 3 occurred at lslwrap.lvlib:get error string.vi
+
+Possible reason(s):
+
+the stream(s) have not been set up

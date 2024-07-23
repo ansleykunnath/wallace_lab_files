@@ -1,0 +1,11 @@
+raw_data_name='NIRS-2024-07-23_001';
+Subject=1
+SamplingRate=2.40385; 
+waveLength_N=2; 
+Wavelengths=[760	850]; 
+source_N=26;
+detector_N=35;
+time_point_N=6;
+source_detector_key=[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;...
+                     0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26];
+probeInfo_file='C:\NIRx\Montages\Audiovisual1SDD_26x28\Standard_probeInfo.mat';

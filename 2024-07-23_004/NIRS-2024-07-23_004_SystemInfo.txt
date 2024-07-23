@@ -1,0 +1,59 @@
+
+Host Name:                 ASWAL-ND3021J26
+OS Name:                   Microsoft Windows 10 Education
+OS Version:                10.0.19045 N/A Build 19045
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Workstation
+OS Build Type:             Multiprocessor Free
+Registered Owner:          neuro
+Registered Organization:   N/A
+Product ID:                00328-10000-00001-AA070
+Original Install Date:     10/31/2023, 3:31:19 PM
+System Boot Time:          7/23/2024, 4:27:49 PM
+System Manufacturer:       HP
+System Model:              HP ENVY x360 2-in-1 Laptop 15-ew0xxx
+System Type:               x64-based PC
+Processor(s):              1 Processor(s) Installed.
+                           [01]: Intel64 Family 6 Model 154 Stepping 4 GenuineIntel ~1700 Mhz
+BIOS Version:              Insyde F.20, 4/12/2023
+Windows Directory:         C:\WINDOWS
+System Directory:          C:\WINDOWS\system32
+Boot Device:               \Device\HarddiskVolume1
+System Locale:             en-us;English (United States)
+Input Locale:              en-us;English (United States)
+Time Zone:                 (UTC-06:00) Central Time (US & Canada)
+Total Physical Memory:     16,095 MB
+Available Physical Memory: 6,469 MB
+Virtual Memory: Max Size:  45,791 MB
+Virtual Memory: Available: 35,784 MB
+Virtual Memory: In Use:    10,007 MB
+Page File Location(s):     C:\pagefile.sys
+Domain:                    vuds.vanderbilt.edu
+Logon Server:              \\ASWAL-ND3021J26
+Hotfix(s):                 11 Hotfix(s) Installed.
+                           [01]: KB5039893
+                           [02]: KB5030841
+                           [03]: KB5011048
+                           [04]: KB5015684
+                           [05]: KB5040427
+                           [06]: KB5014032
+                           [07]: KB5025315
+                           [08]: KB5031539
+                           [09]: KB5031540
+                           [10]: KB5036447
+                           [11]: KB5039336
+Network Card(s):           2 NIC(s) Installed.
+                           [01]: Intel(R) Wi-Fi 6E AX211 160MHz
+                                 Connection Name: Wi-Fi
+                                 DHCP Enabled:    Yes
+                                 DHCP Server:     10.108.51.48
+                                 IP address(es)
+                                 [01]: 10.252.155.103
+                                 [02]: fe80::acd6:b35d:1f77:b60
+                           [02]: Bluetooth Device (Personal Area Network)
+                                 Connection Name: Bluetooth Network Connection
+                                 Status:          Media disconnected
+Hyper-V Requirements:      VM Monitor Mode Extensions: Yes
+                           Virtualization Enabled In Firmware: Yes
+                           Second Level Address Translation: Yes
+                           Data Execution Prevention Available: Yes
