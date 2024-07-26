@@ -7,12 +7,39 @@ from mne.io import read_raw_snirf
 from mne.preprocessing.nirs import beer_lambert_law, optical_density
 from mne_nirs.io import write_raw_snirf
 from numpy.testing import assert_allclose
+import h5py
+
+mne.viz.set_browser_backend('matplotlib') #qt for interactive visualization
 
 # Specify the path to the SNIRF file
-snirf_file_path = "desktop/Kernel2-1.snirf"
+snirf_file_path = "Kernel_S001_2e8a8eb_5.snirf"
 
 # Read the SNIRF file
-raw_intensity = read_raw_snirf(snirf_file_path).load_data()
+raw_intensity = read_raw_snirf(snirf_file_path, verbose=True, preload=True).load_data()
+raw_intensity.apply_function(lambda x: x * 1e-6)
+raw_intensity.plot(n_channels=20, duration=30, show_scrollbars=False)
+fig.savefig('raw_plot_20ch.png', bbox_inches='tight')
+#raw_intensity.plot(n_channels=8368, duration=30, show_scrollbars=False)
+#fig.savefig('raw_plot_all_ch.png', bbox_inches='tight')
+
+def inspect_stim1_data(file_path):
+    stim1_contents = {}
+    with h5py.File(file_path, 'r') as f:
+        if 'nirs/stim1' in f:
+            for key, dataset in f['nirs/stim1'].items():
+                try:
+                    stim1_contents[key] = dataset[()]
+                except Exception as e:
+                    stim1_contents[key] = str(e)
+    return stim1_contents
+
+# Provide the path to your uploaded original SNIRF file
+stim1_contents = inspect_stim1_data(snirf_file_path)
+stim1_contents
+
+
+
+################
 
 # Extract data and channel names
 data = raw_intensity.get_data()
