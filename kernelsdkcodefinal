@@ -37,13 +37,13 @@ event_id += 1
 # Parameters
 check_size = 20  # Size of each square in pixels
 check_freq = 1   # Frequency of checkerboard flash (Hz)
-duration = 2     # Duration of the experiment (seconds)
+duration = 2     # Duration of the checkerboard stimulus (seconds)
 fixation_size = 30
 lineWidth = 15
 
 # Send initial events and wait before paradigm starts
 core.wait(5)
-send_event(sock, event_id, "initial_event", "5")
+send_event(sock, event_id, "event_initial_event", "5")
 event_id += 1
 
 # Create checkerboard stimulus
@@ -70,27 +70,26 @@ event_id += 1
 
 # Example structure with blocks and trials
 for block_num in range(3):
-    send_event(sock, event_id, f"start_block", str(block_num))
+    send_event(sock, event_id, f"start_block_{block_num+1}", str(block_num))
     event_id += 1
     
     for trial_num in range(5):
-        send_event(sock, event_id, f"start_trial", str(trial_num))
+        send_event(sock, event_id, f"start_trial_{trial_num+1}", str(trial_num))
         event_id += 1
 
         # Display fixation point
-        for _ in range(10):
-            fixation_vertical.draw()
-            fixation_horizontal.draw()
-            win.flip()
-            send_event(sock, event_id, f"event_fixation_shown", str(trial_num))
-            event_id += 1
-            core.wait(1)
+        fixation_vertical.draw()
+        fixation_horizontal.draw()
+        win.flip()
+        send_event(sock, event_id, f"event_fixation_shown_{trial_num+1}", str(trial_num))
+        event_id += 1
+        core.wait(1)
         
         # Display checkerboard stimulus
-        send_event(sock, event_id, f"start_checkerboard", str(trial_num))
-        event_id += 1
         start_time = core.getTime()
-        while core.getTime() - start_time < duration:
+        for i in range(int(duration * check_freq)):
+            send_event(sock, event_id, f"event_checkerboard_alternation_{i+1}", str(trial_num))
+            event_id += 1
             t = core.getTime() - start_time
             phase = int(t * check_freq) % 4
             colors = [[-1, -1, -1] if (x + y + phase) % 2 == 0 else [1, 1, 1]
@@ -100,10 +99,9 @@ for block_num in range(3):
             fixation_vertical.draw()
             fixation_horizontal.draw()
             win.flip()
-        send_event(sock, event_id, f"end_checkerboard", str(trial_num))
-        event_id += 1
-
-        send_event(sock, event_id, f"end_trial", str(trial_num))
+            core.wait(1 / check_freq)
+        
+        send_event(sock, event_id, f"end_trial_{trial_num+1}", str(trial_num))
         event_id += 1
         
         for keys in event.getKeys():
@@ -112,7 +110,7 @@ for block_num in range(3):
                 win.close()
                 core.quit()
     
-    send_event(sock, event_id, f"end_block", str(block_num))
+    send_event(sock, event_id, f"end_block_{block_num+1}", str(block_num))
     event_id += 1
 
 # Send end_task event
