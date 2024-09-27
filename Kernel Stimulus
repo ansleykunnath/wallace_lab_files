@@ -2,7 +2,6 @@ import socket
 import json
 import struct
 import time
-from datetime import datetime
 from psychopy import visual, core, event
 
 # TCP setup
@@ -47,9 +46,8 @@ def send_event(event_name, event_value):
     else:
         print(f"Skipping event '{event_name}' due to TCP connection failure.")
 
-# Set up PsychoPy window
-win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=1, units='pix')
-win.color = "black"  # Set the window color to black
+# Set up PsychoPy window with a black background
+win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=1, units='pix', color='black')  # Explicitly set the color to black
 
 # Send start_experiment event
 send_event('start_experiment', '1')
