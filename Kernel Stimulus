@@ -6,7 +6,7 @@ from datetime import datetime
 from psychopy import visual, core, event
 
 # TCP setup
-server_ip = '192.168.1.100'  # IP address of the Flow2 data acquisition computer
+server_ip = '10.74.183.108' # IP address of the Flow2 data acquisition computer
 server_port = 6767  # Kernel SDK port
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
