@@ -6,7 +6,7 @@ from datetime import datetime
 from psychopy import visual, core, event
 
 # TCP setup
-server_ip = '10.74.183.108' # IP address of the Flow2 data acquisition computer
+server_ip = '10.74.183.108'  # IP address of the Flow2 data acquisition computer
 server_port = 6767  # Kernel SDK port
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -49,7 +49,16 @@ def send_event(event_name, event_value):
 
 # Set up PsychoPy window
 win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=1, units='pix')
-win.color = "black"
+win.color = "black"  # Set the window color to black
+
+# Send start_experiment event
+send_event('start_experiment', '1')
+
+# Initial 10-second black screen
+win.flip()  # Display the black screen
+send_event('start_blank_screen', '1')  # Event for the start of the blank screen
+core.wait(10)  # Wait for 10 seconds
+send_event('end_blank_screen', '1')  # Event for the end of the blank screen
 
 # Parameters for checkerboard
 check_size = 20  # Size of each square in pixels
@@ -70,19 +79,10 @@ checkerboard = visual.ElementArrayStim(win, nElements=num_squares**2, sizes=(che
 fixation_vertical = visual.Line(win, start=(0, -fixation_size), end=(0, fixation_size), lineColor="red", lineWidth=lineWidth)
 fixation_horizontal = visual.Line(win, start=(-fixation_size, 0), end=(fixation_size, 0), lineColor="red", lineWidth=lineWidth)
 
-# Send start_experiment event
-send_event('start_experiment', '1')
-
-# Initial 10-second black screen
-win.flip()
-send_event('start_blank_screen', '1')  # Event for blank screen
-core.wait(10)
-send_event('end_blank_screen', '1')
-
 # Main loop: 10 seconds of blank screen followed by 10 seconds of checkerboard (repeated 10 times)
 for cycle in range(10):
     # 10 seconds of checkerboard stimulus
-    send_event(f'start_checkerboard', str(cycle + 1))  # Event for start of checkerboard
+    send_event(f'start_checkerboard', str(cycle + 1))  # Event for the start of the checkerboard
     start_time = core.getTime()
     while core.getTime() - start_time < duration:
         t = core.getTime() - start_time
@@ -93,14 +93,14 @@ for cycle in range(10):
         checkerboard.draw()
         fixation_vertical.draw()
         fixation_horizontal.draw()
-        win.flip()
-    send_event(f'end_checkerboard', str(cycle + 1))  # Event for end of checkerboard
+        win.flip()  # Refresh the window with the updated checkerboard
+    send_event(f'end_checkerboard', str(cycle + 1))  # Event for the end of the checkerboard
 
     # 10 seconds of blank screen
-    win.flip()
-    send_event(f'start_blank_screen', str(cycle + 1))  # Event for blank screen
-    core.wait(10)
-    send_event(f'end_blank_screen', str(cycle + 1))
+    win.flip()  # Clear the screen to black
+    send_event(f'start_blank_screen', str(cycle + 1))  # Event for the start of the blank screen
+    core.wait(10)  # Wait for 10 seconds
+    send_event(f'end_blank_screen', str(cycle + 1))  # Event for the end of the blank screen
 
     # Check for early termination
     if 'escape' in event.getKeys():
