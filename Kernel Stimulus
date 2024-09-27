@@ -2,103 +2,48 @@ import socket
 import json
 import struct
 import time
-from datetime import datetime
-from psychopy import visual, core, event
 
-# TCP setup
-server_ip = '192.168.1.100'  # IP address of the Flow2 data acquisition computer
-server_port = 6767  # Kernel SDK port
+# Connect to Kernel SDK (acquisition computer)
+server_ip = '192.168.1.100'  # Replace with correct IP
+server_port = 6767  # Kernel SDK Port
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect((server_ip, server_port))
 
-# Function to send events via TCP
+# Attempt connection
+try:
+    sock.connect((server_ip, server_port))
+    sock.settimeout(5)  # 5-second timeout
+except (socket.timeout, socket.error) as e:
+    print(f"Connection failed: {e}")
+    sock = None  # No connection established
+
+# Global event ID counter
 event_id = 1
 
+# Function to send event
 def send_event(event_name, event_value):
     global event_id
-    timestamp = int(time.time() * 1e6)  # Get timestamp in microseconds
-    payload = {
-        'id': event_id,
-        'timestamp': timestamp,
-        'event': event_name,
-        'value': event_value
-    }
-    event_id += 1
-    
-    # Convert payload to JSON bytes
-    json_bytes = json.dumps(payload).encode('utf-8')
-    
-    # Send the size of the JSON payload (4-byte unsigned int)
-    sock.sendall(struct.pack('>I', len(json_bytes)))
-    
-    # Send the actual JSON payload
-    sock.sendall(json_bytes)
-
-# Set up PsychoPy window
-win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=1, units='pix')
-win.color = "black"
-
-# Parameters for checkerboard
-check_size = 20  # Size of each square in pixels
-check_freq = 1   # Frequency of checkerboard flash (Hz)
-duration = 10    # Duration for each checkerboard or blank screen period
-fixation_size = 30
-lineWidth = 15
-num_squares = 260  # Number of squares for the checkerboard
-
-# Create checkerboard stimulus
-colors = [[-1, 1] if (x + y) % 2 == 0 else [1, -1] for x in range(num_squares) for y in range(num_squares)]
-checkerboard = visual.ElementArrayStim(win, nElements=num_squares**2, sizes=(check_size, check_size),
-                                       xys=[((x - num_squares // 2) * check_size, (y - num_squares // 2) * check_size)
-                                            for x in range(num_squares) for y in range(num_squares)],
-                                       elementTex=None, elementMask=None, colors=colors, colorSpace='rgb')
-
-# Create fixation point stimulus
-fixation_vertical = visual.Line(win, start=(0, -fixation_size), end=(0, fixation_size), lineColor="red", lineWidth=lineWidth)
-fixation_horizontal = visual.Line(win, start=(-fixation_size, 0), end=(fixation_size, 0), lineColor="red", lineWidth=lineWidth)
-
-# Send start_experiment event
-send_event('start_experiment', '1')
-
-# Initial 10-second black screen
-win.flip()
-send_event('start_blank_screen', '1')  # Event for blank screen
-core.wait(10)
-send_event('end_blank_screen', '1')
-
-# Main loop: 10 seconds of blank screen followed by 10 seconds of checkerboard (repeated 10 times)
-for cycle in range(10):
-    # 10 seconds of checkerboard stimulus
-    send_event(f'start_checkerboard', str(cycle + 1))  # Event for start of checkerboard
-    start_time = core.getTime()
-    while core.getTime() - start_time < duration:
-        t = core.getTime() - start_time
-        phase = int(t * check_freq) % 2
-        colors = [[-1, -1, -1] if (x + y + phase) % 2 == 0 else [1, 1, 1]
-                  for x in range(num_squares) for y in range(num_squares)]
-        checkerboard.colors = colors
-        checkerboard.draw()
-        fixation_vertical.draw()
-        fixation_horizontal.draw()
-        win.flip()
-    send_event(f'end_checkerboard', str(cycle + 1))  # Event for end of checkerboard
-
-    # 10 seconds of blank screen
-    win.flip()
-    send_event(f'start_blank_screen', str(cycle + 1))  # Event for blank screen
-    core.wait(10)
-    send_event(f'end_blank_screen', str(cycle + 1))
-
-    # Check for early termination
-    if 'escape' in event.getKeys():
-        send_event('end_experiment', '1')  # Send end_experiment before exiting
-        win.close()
-        core.quit()
-
-# Send end_experiment event
-send_event('end_experiment', '1')
-
-# Clean up and close the window
-sock.close()
-win.close()
-core.quit()
+    if sock:  # Ensure connection is alive
+        try:
+            timestamp = int(time.time() * 1e6)  # Get timestamp in microseconds
+            payload = {
+                'id': event_id,
+                'timestamp': timestamp,
+                'event': event_name,
+                'value': event_value
+            }
+            event_id += 1
+            
+            # Convert the JSON payload to bytes
+            json_bytes = json.dumps(payload).encode('utf-8')
+            
+            # Send the size of the JSON payload (4-byte unsigned int, network/big-endian)
+            sock.sendall(struct.pack('!I', len(json_bytes)))
+            
+            # Send the actual JSON payload
+            sock.sendall(json_bytes)
+            
+            print(f"Event '{event_name}' sent successfully")
+        except (socket.timeout, socket.error) as e:
+            print(f"Failed to send event '{event_name}': {e}")
+    else:
+        print(f"Skipping event '{event_name}' due to connection failure.")
