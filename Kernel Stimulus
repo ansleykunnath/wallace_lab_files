@@ -13,19 +13,22 @@ outlet = StreamOutlet(info)
 
 # Parameters
 check_size = 20  # Size of each square in pixels
-check_freq = 1    # Frequency of checkerboard flash (Hz)
+check_freq = 1   # Frequency of checkerboard flash (Hz)
 alternation_duration = 10  # Duration of checkerboard alternation (seconds)
 blank_duration = 10  # Duration of blank screen (seconds)
 fixation_size = 30
 lineWidth = 15
 
+# Calculate number of squares horizontally and vertically to cover the entire screen
+num_squares_x = int(win.size[0] / check_size)
+num_squares_y = int(win.size[1] / check_size)
+
 # Create checkerboard stimulus
-num_squares = 26  # Adjust number of squares
 colors = [[-1, 1] if (x + y) % 2 == 0 else [1, -1]
-          for x in range(num_squares) for y in range(num_squares)]
-checkerboard = visual.ElementArrayStim(win, nElements=num_squares**2, sizes=(check_size, check_size),
-                                       xys=[((x - num_squares // 2) * check_size, (y - num_squares // 2) * check_size)
-                                            for x in range(num_squares) for y in range(num_squares)],
+          for x in range(num_squares_x) for y in range(num_squares_y)]
+checkerboard = visual.ElementArrayStim(win, nElements=num_squares_x * num_squares_y, sizes=(check_size, check_size),
+                                       xys=[((x - num_squares_x // 2) * check_size, (y - num_squares_y // 2) * check_size)
+                                            for x in range(num_squares_x) for y in range(num_squares_y)],
                                        elementTex=None, elementMask=None, colors=colors, colorSpace='rgb')
 
 # Create fixation point stimulus
@@ -42,7 +45,7 @@ for n in range(10):
         t = core.getTime() - start_time
         phase = int(t * check_freq) % 2
         colors = [[-1, -1, -1] if (x + y + phase) % 2 == 0 else [1, 1, 1]
-                  for x in range(num_squares) for y in range(num_squares)]
+                  for x in range(num_squares_x) for y in range(num_squares_y)]
         checkerboard.colors = colors
         checkerboard.draw()
         fixation_vertical.draw()
