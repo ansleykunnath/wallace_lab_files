@@ -1,90 +1,104 @@
-from psychopy import visual, core, event
-from pylsl import StreamInfo, StreamOutlet
+import socket
+import json
+import struct
 import time
 from datetime import datetime
+from psychopy import visual, core, event
 
-# Set up window with explicit RGB values for black
-win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=1, units='pix', color=[-1, -1, -1])
+# TCP setup
+server_ip = '192.168.1.100'  # IP address of the Flow2 data acquisition computer
+server_port = 6767  # Kernel SDK port
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect((server_ip, server_port))
 
-# Set up LSL
-info = StreamInfo(name="VEP", type="Markers", channel_count=1, nominal_srate=1, channel_format="int32", source_id="VEP")
-outlet = StreamOutlet(info)
+# Function to send events via TCP
+event_id = 1
 
-# Parameters
+def send_event(event_name, event_value):
+    global event_id
+    timestamp = int(time.time() * 1e6)  # Get timestamp in microseconds
+    payload = {
+        'id': event_id,
+        'timestamp': timestamp,
+        'event': event_name,
+        'value': event_value
+    }
+    event_id += 1
+    
+    # Convert payload to JSON bytes
+    json_bytes = json.dumps(payload).encode('utf-8')
+    
+    # Send the size of the JSON payload (4-byte unsigned int)
+    sock.sendall(struct.pack('>I', len(json_bytes)))
+    
+    # Send the actual JSON payload
+    sock.sendall(json_bytes)
+
+# Set up PsychoPy window
+win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=1, units='pix')
+win.color = "black"
+
+# Parameters for checkerboard
 check_size = 20  # Size of each square in pixels
 check_freq = 1   # Frequency of checkerboard flash (Hz)
-alternation_duration = 10  # Duration of checkerboard alternation (seconds)
-blank_duration = 10  # Duration of blank screen (seconds)
+duration = 10    # Duration for each checkerboard or blank screen period
 fixation_size = 30
 lineWidth = 15
-
-# Calculate number of squares horizontally and vertically to cover the entire screen
-num_squares_x = int(win.size[0] / check_size)
-num_squares_y = int(win.size[1] / check_size)
+num_squares = 260  # Number of squares for the checkerboard
 
 # Create checkerboard stimulus
-colors = [[-1, 1] if (x + y) % 2 == 0 else [1, -1]
-          for x in range(num_squares_x) for y in range(num_squares_y)]
-checkerboard = visual.ElementArrayStim(win, nElements=num_squares_x * num_squares_y, sizes=(check_size, check_size),
-                                       xys=[((x - num_squares_x // 2) * check_size, (y - num_squares_y // 2) * check_size)
-                                            for x in range(num_squares_x) for y in range(num_squares_y)],
+colors = [[-1, 1] if (x + y) % 2 == 0 else [1, -1] for x in range(num_squares) for y in range(num_squares)]
+checkerboard = visual.ElementArrayStim(win, nElements=num_squares**2, sizes=(check_size, check_size),
+                                       xys=[((x - num_squares // 2) * check_size, (y - num_squares // 2) * check_size)
+                                            for x in range(num_squares) for y in range(num_squares)],
                                        elementTex=None, elementMask=None, colors=colors, colorSpace='rgb')
 
 # Create fixation point stimulus
 fixation_vertical = visual.Line(win, start=(0, -fixation_size), end=(0, fixation_size), lineColor="red", lineWidth=lineWidth)
 fixation_horizontal = visual.Line(win, start=(-fixation_size, 0), end=(fixation_size, 0), lineColor="red", lineWidth=lineWidth)
 
-# Start with an explicit 10 second black screen before checkerboard stimulus
-print("Initial blank screen for 10 seconds before checkerboard stimulus.")
-win.color = [-1, -1, -1]  # Ensure screen is black
-win.flip()           # Display black screen
-outlet.push_sample([0])  # Marker for initial black screen (e.g., marker 0)
-core.wait(blank_duration)  # Wait for 10 seconds
+# Send start_experiment event
+send_event('start_experiment', '1')
 
-# Main loop to alternate 10 times
-for n in range(10):
-    # Send event marker for the nth checkerboard start
-    checkerboard_event_marker = n + 1
-    outlet.push_sample([checkerboard_event_marker])  # Marker for nth checkerboard start
-    print(f"Checkerboard start, iteration {n+1}, event marker: {checkerboard_event_marker}")
-    
-    # Checkerboard alternation for 10 seconds
+# Initial 10-second black screen
+win.flip()
+send_event('start_blank_screen', '1')  # Event for blank screen
+core.wait(10)
+send_event('end_blank_screen', '1')
+
+# Main loop: 10 seconds of blank screen followed by 10 seconds of checkerboard (repeated 10 times)
+for cycle in range(10):
+    # 10 seconds of checkerboard stimulus
+    send_event(f'start_checkerboard', str(cycle + 1))  # Event for start of checkerboard
     start_time = core.getTime()
-    while core.getTime() - start_time < alternation_duration:
-        # Check for key press to terminate
-        if 'escape' in event.getKeys():
-            print("Experiment terminated by user.")
-            win.close()
-            core.quit()
-
+    while core.getTime() - start_time < duration:
         t = core.getTime() - start_time
         phase = int(t * check_freq) % 2
         colors = [[-1, -1, -1] if (x + y + phase) % 2 == 0 else [1, 1, 1]
-                  for x in range(num_squares_x) for y in range(num_squares_y)]
+                  for x in range(num_squares) for y in range(num_squares)]
         checkerboard.colors = colors
         checkerboard.draw()
         fixation_vertical.draw()
         fixation_horizontal.draw()
         win.flip()
+    send_event(f'end_checkerboard', str(cycle + 1))  # Event for end of checkerboard
 
-    # Send event marker for the blank screen start
-    blank_screen_marker = 100  # Constant event marker for blank screen
-    outlet.push_sample([blank_screen_marker])
-    print(f"Blank screen start, iteration {n+1}, event marker: {blank_screen_marker}")
-
-    # Blank screen for 10 seconds
-    win.color = [-1, -1, -1]  # Ensure screen remains black
+    # 10 seconds of blank screen
     win.flip()
-    core.wait(blank_duration)
+    send_event(f'start_blank_screen', str(cycle + 1))  # Event for blank screen
+    core.wait(10)
+    send_event(f'end_blank_screen', str(cycle + 1))
 
-    # Check for key press to terminate
+    # Check for early termination
     if 'escape' in event.getKeys():
-        print("Experiment terminated by user.")
+        send_event('end_experiment', '1')  # Send end_experiment before exiting
         win.close()
         core.quit()
 
-# Clean up
-outlet.push_sample([999])  # Final marker to indicate experiment ended
-print("Experiment end")
+# Send end_experiment event
+send_event('end_experiment', '1')
+
+# Clean up and close the window
+sock.close()
 win.close()
 core.quit()
