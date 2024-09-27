@@ -35,13 +35,28 @@ checkerboard = visual.ElementArrayStim(win, nElements=num_squares_x * num_square
 fixation_vertical = visual.Line(win, start=(0, -fixation_size), end=(0, fixation_size), lineColor="red", lineWidth=lineWidth)
 fixation_horizontal = visual.Line(win, start=(-fixation_size, 0), end=(fixation_size, 0), lineColor="red", lineWidth=lineWidth)
 
+# Start with a 10 second blank screen
+print("Blank screen at the beginning for 10 seconds.")
+win.color = "black"
+win.flip()
+core.wait(blank_duration)
+
 # Main loop to alternate 10 times
 for n in range(10):
+    # Send event marker for the nth checkerboard start
+    checkerboard_event_marker = n + 1
+    outlet.push_sample([checkerboard_event_marker])  # Marker for nth checkerboard start
+    print(f"Checkerboard start, iteration {n+1}, event marker: {checkerboard_event_marker}")
+    
     # Checkerboard alternation for 10 seconds
-    print(f"Checkerboard start, iteration {n+1}")
-    outlet.push_sample([1])  # Marker for checkerboard start
     start_time = core.getTime()
     while core.getTime() - start_time < alternation_duration:
+        # Check for key press to terminate
+        if 'escape' in event.getKeys():
+            print("Experiment terminated by user.")
+            win.close()
+            core.quit()
+
         t = core.getTime() - start_time
         phase = int(t * check_freq) % 2
         colors = [[-1, -1, -1] if (x + y + phase) % 2 == 0 else [1, 1, 1]
@@ -51,18 +66,25 @@ for n in range(10):
         fixation_vertical.draw()
         fixation_horizontal.draw()
         win.flip()
-    
-    outlet.push_sample([2])  # Marker for checkerboard end
+
+    # Send event marker for the blank screen start
+    blank_screen_marker = 100  # Constant event marker for blank screen
+    outlet.push_sample([blank_screen_marker])
+    print(f"Blank screen start, iteration {n+1}, event marker: {blank_screen_marker}")
 
     # Blank screen for 10 seconds
-    print(f"Blank screen start, iteration {n+1}")
-    outlet.push_sample([3])  # Marker for blank screen start
     win.color = "black"
     win.flip()
     core.wait(blank_duration)
 
+    # Check for key press to terminate
+    if 'escape' in event.getKeys():
+        print("Experiment terminated by user.")
+        win.close()
+        core.quit()
+
 # Clean up
-outlet.push_sample([5])  # Final marker
+outlet.push_sample([999])  # Final marker to indicate experiment ended
 print("Experiment end")
 win.close()
 core.quit()
