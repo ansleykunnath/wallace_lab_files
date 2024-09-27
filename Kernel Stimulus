@@ -3,9 +3,8 @@ from pylsl import StreamInfo, StreamOutlet
 import time
 from datetime import datetime
 
-# Set up window
-win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=1, units='pix')
-win.color = "black"  # Set initial color to black
+# Set up window with explicit RGB values for black
+win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=1, units='pix', color=[-1, -1, -1])
 
 # Set up LSL
 info = StreamInfo(name="VEP", type="Markers", channel_count=1, nominal_srate=1, channel_format="int32", source_id="VEP")
@@ -37,7 +36,7 @@ fixation_horizontal = visual.Line(win, start=(-fixation_size, 0), end=(fixation_
 
 # Start with an explicit 10 second black screen before checkerboard stimulus
 print("Initial blank screen for 10 seconds before checkerboard stimulus.")
-win.color = "black"  # Ensure screen is black
+win.color = [-1, -1, -1]  # Ensure screen is black
 win.flip()           # Display black screen
 outlet.push_sample([0])  # Marker for initial black screen (e.g., marker 0)
 core.wait(blank_duration)  # Wait for 10 seconds
@@ -74,7 +73,7 @@ for n in range(10):
     print(f"Blank screen start, iteration {n+1}, event marker: {blank_screen_marker}")
 
     # Blank screen for 10 seconds
-    win.color = "black"
+    win.color = [-1, -1, -1]  # Ensure screen remains black
     win.flip()
     core.wait(blank_duration)
 
