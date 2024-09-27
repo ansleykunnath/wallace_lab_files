@@ -5,7 +5,7 @@ from datetime import datetime
 
 # Set up window
 win = visual.Window(size=(2560, 1440), fullscr=True, monitor='display_stimuli', screen=1, units='pix')
-win.color = "black"
+win.color = "black"  # Set initial color to black
 
 # Set up LSL
 info = StreamInfo(name="VEP", type="Markers", channel_count=1, nominal_srate=1, channel_format="int32", source_id="VEP")
@@ -35,11 +35,12 @@ checkerboard = visual.ElementArrayStim(win, nElements=num_squares_x * num_square
 fixation_vertical = visual.Line(win, start=(0, -fixation_size), end=(0, fixation_size), lineColor="red", lineWidth=lineWidth)
 fixation_horizontal = visual.Line(win, start=(-fixation_size, 0), end=(fixation_size, 0), lineColor="red", lineWidth=lineWidth)
 
-# Start with a 10 second blank screen
-print("Blank screen at the beginning for 10 seconds.")
-win.color = "black"
-win.flip()
-core.wait(blank_duration)
+# Start with an explicit 10 second black screen before checkerboard stimulus
+print("Initial blank screen for 10 seconds before checkerboard stimulus.")
+win.color = "black"  # Ensure screen is black
+win.flip()           # Display black screen
+outlet.push_sample([0])  # Marker for initial black screen (e.g., marker 0)
+core.wait(blank_duration)  # Wait for 10 seconds
 
 # Main loop to alternate 10 times
 for n in range(10):
